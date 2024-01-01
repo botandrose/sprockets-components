@@ -10,16 +10,45 @@ module Sprockets
         app.config.assets.configure do |env|
           env.register_pipeline :component, Pipeline.new
         end
+
+        # there isn't a supported way to register path resolvers so we have to hack it in
+        Sprockets::Resolve.prepend Module.new {
+          def resolve_under_paths(*)
+            @resolvers ||= [
+              method(:resolve_main_under_path),
+              method(:resolve_alts_under_path),
+              method(:resolve_index_under_path),
+              method(:resolve_component),
+            ]
+            super
+          end
+
+          def resolve_component load_path, logical_name, mime_exts
+            dirname = File.join(load_path, logical_name)
+
+            if load_path.split("/").last == "components" && Dir.exist?(dirname)
+              candidates = [{
+                filename: "#{dirname}/#{logical_name}.js",
+                type: "application/javascript",
+                index_alias: "app/assets/components/#{logical_name}.js",
+              }]
+            else
+              candidates = []
+            end
+
+            return candidates, [ URIUtils.build_file_digest_uri(dirname) ]
+          end
+        }
       end
     end
 
     module Directives
       protected
 
-      def process_component_directive name
-        process_component_css_directive "#{name}/#{name}.css"
-        process_component_html_directive "#{name}/#{name}.html"
-        process_component_js_directive "#{name}/#{name}.js"
+      def process_component_directive
+        name = @dirname.split("/").last
+        process_component_css_directive "./#{name}.css"
+        process_component_html_directive "./#{name}.html"
       end
 
       def process_component_css_directive path
@@ -29,10 +58,6 @@ module Sprockets
       def process_component_html_directive path
         @required << resolve(path, accept: "text/html", pipeline: :component)
       end
-
-      def process_component_js_directive path
-        @required << resolve(path, accept: "application/javascript", pipeline: :component)
-      end
     end
 
     class Pipeline
@@ -40,7 +65,6 @@ module Sprockets
         {
           "text/css" => [CSSProcessor.new],
           "text/html" => [HTMLProcessor.new],
-          "application/javascript" => [JSProcessor.new],
         }.fetch(type) +
           env.send(:default_processors_for, type, file_type)
       end
@@ -55,13 +79,6 @@ module Sprockets
     class HTMLProcessor
       def call input
         "const HTML = `<style>${CSS}</style>\n#{input[:data]}`;\n"
-      end
-    end
-
-    class JSProcessor
-      def call input
-        name = input[:name].split("/").first
-        "#{input[:data]};window.customElements.define('#{name}', #{name.underscore.classify})"
       end
     end
   end

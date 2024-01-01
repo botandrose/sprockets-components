@@ -14,21 +14,21 @@ Use one directory per component, under `app/assets/components`:
 app/assets/
 └── components
     └── my-counter
-        ├── index.js
         ├── my-counter.js
         ├── my-counter.scss
         └── my-counter.slim
 ```
 
-Each component's index.js file wires everything up in a single line:
+At the top of the main my-counter.js component file, add the `component` directive:
 ```js
-//= component my-counter
+//= component
+
+customElements.define("my-counter", class extends HTMLElement {
+  // ...
+})
 ```
 
-Now, from the perspective of the main my-counter.js file, there are two things done:
-1. There is an `HTML` variable available for use in the component. It is a string of the compiled template, with the compiled CSS inlined into an interior <style> tag.
-2. `window.customElements.define("my-counter", MyCounter)` is appended to the compiled file, so the JavaScript component class should be named appropriately.
-
+This directive exposes an `HTML` variable for use in the component. It is a string of the compiled template, with the compiled CSS inlined into an interior <style> tag.
 
 Use the component in your views, as you'd expect. Sprockets compiles it all down to a single compiled js file. This file can be included directly, or `//= require`d into other files, or exposed to the importmap, or whatever you want!
 ```html.erb
