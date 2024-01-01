@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative "components/version"
+require "sprockets/railtie"
 
 module Sprockets
   module Components
-    class Engine < ::Rails::Engine
-      initializer "sprockets-components" do |app|
+    class Railtie < ::Rails::Railtie
+      initializer "sprockets-components", group: :all do |app|
         Sprockets::DirectiveProcessor.include Directives
-        app.config.after_initialize do
-          app.assets.register_pipeline :component, Pipeline.new
+        app.config.assets.configure do |env|
+          env.register_pipeline :component, Pipeline.new
         end
       end
     end
