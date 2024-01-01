@@ -20,17 +20,17 @@ app/assets/
         └── my-counter.slim
 ```
 
-The index.js file wires everything up:
+Each component's index.js file wires everything up in a single line:
 ```js
 //= component my-counter
 ```
 
 Now, from the perspective of the main my-counter.js file, there are two things done:
 1. There is an `HTML` variable available for use in the component. It is a string of the compiled template, with the compiled CSS inlined into an interior <style> tag.
-2. `window.customElements.define("my-counter", MyCounter)` is appended to the compiled file.
+2. `window.customElements.define("my-counter", MyCounter)` is appended to the compiled file, so the JavaScript component class should be named appropriately.
 
 
-Use the component in your views as a single compiled js file:
+Use the component in your views, as you'd expect. Sprockets compiles it all down to a single compiled js file. This file can be included directly, or `//= require`d into other files, or exposed to the importmap, or whatever you want!
 ```html.erb
 <!-- app/views/test/test.html.erb -->
 <%= javascript_include_tag "my-counter" %>
@@ -46,7 +46,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/sprockets-components.
+Bug reports and pull requests are welcome on GitHub at https://github.com/botandrose/sprockets-components.
 
 ## License
 
