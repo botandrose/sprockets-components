@@ -72,13 +72,13 @@ module Sprockets
 
     class CSSProcessor
       def call input
-        "const CSS = `#{input[:data]}`;\n"
+        "const __SprocketsComponent__CSS = `#{input[:data]}`;\n"
       end
     end
 
     class HTMLProcessor
       def call input
-        "const HTML = `<style>${CSS}</style>\n#{input[:data]}`;\n"
+        "const HTML = `<style>${__SprocketsComponent__CSS}</style>\n#{input[:data]}`;\n"
       end
     end
   end
